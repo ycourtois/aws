@@ -1,0 +1,5 @@
+template_path: principals.yaml
+#stack_name: {{ stack_group_config.project_code }}-principals
+parameters:
+  Project: {{ stack_group_config.project_name }}
+  ResourceName: {{ stack_group_config.resource_name }}

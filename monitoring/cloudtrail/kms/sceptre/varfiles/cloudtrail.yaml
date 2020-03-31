@@ -1,0 +1,7 @@
+cloudtrail:
+  trail:
+    enabled: "true"
+    multiregion: "false"
+    logs:
+      enabled: "true"
+      retention_days: 1

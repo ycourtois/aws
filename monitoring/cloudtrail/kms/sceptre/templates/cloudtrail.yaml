@@ -1,0 +1,157 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create a trail to track activities'
+
+###############################################################################
+### Parameters
+###############################################################################
+Parameters:
+  Project:
+    Type: String
+  ResourceName:
+    Type: String
+  CloudWatchLogsEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - true
+      - false
+  LogsRetentionInDays:
+    Description: 'The number of days log events are kept in CloudWatch Logs'
+    Type: Number
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+  Enabled:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+  MultiRegion:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - true
+      - false
+  LambdaFunctionArn:
+    Type: String
+
+
+###############################################################################
+### Conditions
+###############################################################################
+Conditions:
+  IsCloudWatchLogsEnabled: !Equals [!Ref CloudWatchLogsEnabled, 'true']
+
+###############################################################################
+### Resources
+###############################################################################
+Resources:
+  ## Logs Storage
+  Bucket:
+    DeletionPolicy: Retain
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Project}-${ResourceName}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !Ref LambdaFunctionArn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: ".json.gz"
+      Tags:
+        - Key: Name
+          Value: !Sub '${Project}-${ResourceName}'
+        - Key: Project
+          Value: !Ref Project
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AWSCloudTrailAclCheck
+            Effect: Allow
+            Principal:
+              Service: 'cloudtrail.amazonaws.com'
+            Action: 's3:GetBucketAcl'
+            Resource: !GetAtt Bucket.Arn
+          - Sid: AWSCloudTrailWrite
+            Effect: Allow
+            Principal:
+              Service: 'cloudtrail.amazonaws.com'
+            Action: 's3:PutObject'
+            Resource: !Sub '${Bucket.Arn}/*/AWSLogs/${AWS::AccountId}/*'
+            Condition:
+              StringEquals:
+                's3:x-amz-acl': 'bucket-owner-full-control'
+
+  #### CloudWatch Logs
+  TrailLogGroup:
+    Condition: IsCloudWatchLogsEnabled
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/${Project}/${ResourceName}'
+      RetentionInDays: !Ref LogsRetentionInDays
+
+  TrailLogGroupRole:
+    Condition: IsCloudWatchLogsEnabled
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AssumeRole1
+            Effect: Allow
+            Principal:
+              Service: 'cloudtrail.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'cloudtrail-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: !GetAtt TrailLogGroup.Arn
+
+  Trail:
+    DependsOn: BucketPolicy
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      TrailName: !Sub '${Project}-${ResourceName}'
+      IncludeGlobalServiceEvents: !Ref MultiRegion
+      IsLogging: !Ref Enabled
+      IsMultiRegionTrail: !Ref MultiRegion
+      S3BucketName: !Ref Bucket
+      S3KeyPrefix: !Ref ResourceName
+      EventSelectors:
+        - IncludeManagementEvents: true
+          ReadWriteType: All
+      CloudWatchLogsLogGroupArn: !GetAtt TrailLogGroup.Arn
+      CloudWatchLogsRoleArn: !GetAtt TrailLogGroupRole.Arn
+      Tags:
+        - Key: Name
+          Value: !Sub '${Project}-${ResourceName}'
+        - Key: Project
+          Value: !Ref Project
+
+
+###############################################################################
+### Outputs
+###############################################################################
+Outputs:
+  BucketName:
+    Value: !Ref Bucket
+  BucketArn:
+    Value: !GetAtt Bucket.Arn

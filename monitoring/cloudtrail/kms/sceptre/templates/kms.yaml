@@ -1,0 +1,52 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create KMS CMK'
+
+###############################################################################
+### Parameters
+###############################################################################
+Parameters:
+  Project:
+    Type: String
+  ResourceName:
+    Type: String
+
+###############################################################################
+### Resources
+###############################################################################
+Resources:
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: !Sub '${Project}-${ResourceName}'
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: !Ref AWS::StackName
+        Statement:
+          - Sid: 'Allows account iam resources to perform all actions on the key'
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action:
+              - "kms:*"
+            Resource: "*"
+      Tags:
+        - Key: Name
+          Value: !Sub '${Project}-${ResourceName}'
+        - Key: Project
+          Value: !Ref Project
+
+  KMSAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/${Project}-${ResourceName}'
+      TargetKeyId: !Ref KMSKey
+
+###############################################################################
+### Outputs
+###############################################################################
+Outputs:
+  CMK:
+    Value: !Ref KMSKey
+  CMKArn:
+    Value: !GetAtt KMSKey.Arn

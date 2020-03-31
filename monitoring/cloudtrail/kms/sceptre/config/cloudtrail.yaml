@@ -1,0 +1,11 @@
+template_path: cloudtrail.yaml
+#stack_name: {{ stack_group_config.project_code }}-cloudtrail
+parameters:
+  Project: {{ stack_group_config.project_name }}
+  ResourceName: {{ stack_group_config.resource_name }}
+  # CloudTrail
+  Enabled: "{{ var.cloudtrail.trail.enabled }}"
+  MultiRegion: "{{ var.cloudtrail.trail.multiregion }}"
+  CloudWatchLogsEnabled: "{{ var.cloudtrail.trail.logs.enabled }}"
+  LogsRetentionInDays: "{{ var.cloudtrail.trail.logs.retention_days }}"
+  LambdaFunctionArn: !stack_output lambda.yaml::LambdaFunctionArn

@@ -1,0 +1,5 @@
+template_path: kms.yaml
+#stack_name: {{ stack_group_config.project_code }}-kms
+parameters:
+  Project: {{ stack_group_config.project_name }}
+  ResourceName: {{ stack_group_config.resource_name }}

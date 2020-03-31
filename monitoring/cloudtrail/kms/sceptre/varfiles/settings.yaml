@@ -1,0 +1,4 @@
+settings:
+  project_name: whatever-audit-poc
+  region: eu-west-1
+  resource_name: kms-access

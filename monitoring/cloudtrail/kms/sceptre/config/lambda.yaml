@@ -1,0 +1,17 @@
+template_path: lambda.j2
+#stack_name: {{ stack_group_config.project_code }}-lambda
+hooks:
+  before_create:
+    - !sceptre_s3_upload ../lambda/src/main
+  before_update:
+    - !sceptre_s3_upload ../lambda/src/main
+sceptre_user_data:
+  Code:
+    S3Bucket: {{ stack_group_config.project_name }}-{{ stack_group_config.resource_name }}
+    S3Key: !sceptre_s3_key ../lambda/src/main
+parameters:
+  Project: {{ stack_group_config.project_name }}
+  ResourceName: {{ stack_group_config.resource_name }}
+  TopicArn: !stack_output sns.yaml::TopicArn
+  AllowedPrincipals: !stack_output principals.yaml::AllowedPrincipals
+  CMKArn: !stack_output kms.yaml::CMKArn

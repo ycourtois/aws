@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create a lambda-backed resource to validate acm certificate'
+
+###############################################################################
+### Parameters
+###############################################################################
+Parameters:
+  Project:
+    Type: String
+  ResourceName:
+    Type: String
+  TopicArn:
+    Type: String
+  AllowedPrincipals:
+    Type: String
+  CMKArn:
+    Type: String
+
+
+###############################################################################
+### Resources
+###############################################################################
+Resources:
+  LambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Project}-${ResourceName}-lambda'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: 'sts:AssumeRole'
+            Principal:
+              Service: lambda.amazonaws.com
+      Policies:
+        - PolicyName: WriteCloudWatchLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+        - PolicyName: SNSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'sns:Publish'
+                Resource: '*'
+        - PolicyName: S3Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:GetObject'
+                Resource: !Sub 'arn:aws:s3:::${Project}-${ResourceName}/${ResourceName}/*'
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${Project}-${ResourceName}'
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: 'Lambda function tasked to analyze kms api calls inside cloudtrail log.'
+      Handler: app.handler
+      Runtime: python3.7
+      FunctionName: !Sub '${Project}-${ResourceName}'
+      Timeout: 60
+      MemorySize: 256
+      Role: !GetAtt LambdaFunctionRole.Arn
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref TopicArn
+          ALLOWED_PRINCIPALS: !Ref AllowedPrincipals
+          RESTRICTED_KMS_CMK_ARN: !Ref CMKArn
+      Code:
+        S3Bucket: {{ sceptre_user_data.Code.S3Bucket }}
+        S3Key: {{ sceptre_user_data.Code.S3Key }}
+      Tags:
+        - Key: Name
+          Value: !Sub '${Project}-${ResourceName}'
+        - Key: Project
+          Value: !Ref Project
+
+###############################################################################
+### Output
+###############################################################################
+Outputs:
+  LambdaFunctionArn:
+    Value: !GetAtt LambdaFunction.Arn

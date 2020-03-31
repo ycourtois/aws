@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create SNS Topic to send alert notifications'
+
+###############################################################################
+### Parameters
+###############################################################################
+Parameters:
+  Project:
+    Type: String
+  ResourceName:
+    Type: String
+
+###############################################################################
+### Resources
+###############################################################################
+Resources:
+
+  Topic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Ref ResourceName
+      TopicName: !Ref ResourceName
+
+  TopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Id: MyId
+        Version: '2012-10-17'
+        Statement:
+          - Sid: MySid
+            Effect: Allow
+            Principal:
+              AWS: !Sub '${AWS::AccountId}'
+            Action: 'sns:Publish'
+            Resource: !Ref Topic
+      Topics:
+        - !Ref Topic
+
+###############################################################################
+### Output
+###############################################################################
+Outputs:
+  TopicArn:
+    Value: !Ref Topic

@@ -1,0 +1,83 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "AssumedRole",
+        "principalId": "AROAIDPPEZS35WEXAMPLE:AssumedRoleSessionName",
+        "arn": "arn:aws:sts::123456789012:assumed-role/MyAllowedRoleToBeAssumed/MySessionName",
+        "accountId": "123456789012",
+        "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+        "sessionContext": {
+          "attributes": {
+            "mfaAuthenticated": "false",
+            "creationDate": "20131102T010628Z"
+          },
+          "sessionIssuer": {
+            "type": "Role",
+            "principalId": "AROAIDPPEZS35WEXAMPLE",
+            "arn": "arn:aws:iam::123456789012:role/MyAllowedRoleToBeAssumed",
+            "accountId": "123456789012",
+            "userName": "MyAllowedRoleToBeAssumed"
+          }
+        }
+      },
+      "eventTime": "2014-11-04T00:52:43Z",
+      "eventSource": "kms.amazonaws.com",
+      "eventName": "Decrypt",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.0.2.0",
+      "userAgent": "AWS Internal",
+      "requestParameters": {
+        "keyId": "262d9fcb-f1a0-4447-af16-3714cff61ec1"
+      },
+      "responseElements": null,
+      "requestID": "e26552bc-63bc-11e4-bc2b-4198b6150d5c",
+      "eventID": "995c4653-3c53-4a06-a0f0-f5531997b741",
+      "readOnly": false,
+      "resources": [
+        {
+          "ARN": "arn:aws:kms:us-east-1:123456789012:key/262d9fcb-f1a0-4447-af16-3714cff61ec1",
+          "accountId": "123456789012"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "123456789012"
+    },
+    {
+      "eventVersion": "1.02",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAJ45Q7YFFAREXAMPLE",
+        "arn": "arn:aws:iam::123456789012:user/MyAllowedUser",
+        "accountId": "123456789012",
+        "accessKeyId": "EXAMPLE_KEY_ID",
+        "userName": "Alice"
+      },
+      "eventTime": "2014-11-04T00:53:11Z",
+      "eventSource": "kms.amazonaws.com",
+      "eventName": "Encrypt",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "192.0.2.0",
+      "userAgent": "AWS Internal",
+      "requestParameters": {
+        "encryptionContext": {
+          "ContextKey1": "Value1"
+        },
+        "keyId": "arn:aws:kms:us-east-1:012345678901:key/8d3acf57-6bba-480a-9459-ed1b8e79d3d0"
+      },
+      "responseElements": null,
+      "requestID": "f3423043-63bc-11e4-bc2b-4198b6150d5c",
+      "eventID": "91235988-eb87-476a-ac2c-0cdc244e6dca",
+      "readOnly": true,
+      "resources": [
+        {
+          "ARN": "arn:aws:kms:us-east-1:012345678901:key/8d3acf57-6bba-480a-9459-ed1b8e79d3d0",
+          "accountId": "012345678901"
+        }
+      ],
+      "eventType": "AwsServiceEvent",
+      "recipientAccountId": "012345678901"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# sceptre variables
+project_code: {{ var.settings.project_name }}
+region: {{ var.settings.region }}
+# custom variables
+project_name: {{ var.settings.project_name }}
+resource_name: {{ var.settings.resource_name }}

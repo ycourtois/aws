@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create iam principals'
+
+
+###############################################################################
+### Parameters
+###############################################################################
+Parameters:
+  Project:
+    Type: String
+  ResourceName:
+    Type: String
+  User1Name:
+    Type: String
+    Default: "User1"
+  User2Name:
+    Type: String
+    Default: "User2"
+  ProgrammaticAccessStatus:
+    Type: String
+    Default: Active
+    AllowedValues:
+      - Active
+      - Inactive
+  ProgrammaticAccessSerial:
+    Type: Number
+    Default: 1
+
+###############################################################################
+### Resources
+###############################################################################
+Resources:
+
+  ### Policies ###
+
+  UserPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "Policy for assuming role"
+      Path: "/"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: STS
+            Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource:
+              - !GetAtt Role1.Arn
+              - !GetAtt Role2.Arn
+
+  S3KMSPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "Policy for accessing kms and s3"
+      Path: "/"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: KMS
+            Effect: Allow
+            Action:
+              - kms:*
+            Resource: '*'
+          - Sid: S3
+            Effect: Allow
+            Action:
+              - s3:*
+            Resource: '*'
+
+  ### Users ###
+
+  User1:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref User1Name
+      ManagedPolicyArns:
+        - !Ref S3KMSPolicy
+        - !Ref UserPolicy
+
+  User2:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref User2Name
+      ManagedPolicyArns:
+        - !Ref S3KMSPolicy
+        - !Ref UserPolicy
+
+  User1ProgrammaticAccess:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      Serial: !Ref ProgrammaticAccessSerial
+      Status: !Ref ProgrammaticAccessStatus
+      UserName: !Ref User1
+
+  User2ProgrammaticAccess:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      Serial: !Ref ProgrammaticAccessSerial
+      Status: !Ref ProgrammaticAccessStatus
+      UserName: !Ref User2
+
+  ### Roles ###
+
+  Role1:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Project}-${ResourceName}-1'
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Principal:
+              AWS: !Sub '${AWS::AccountId}'
+            Effect: Allow
+        Version: '2012-10-17'
+      Path: "/"
+      ManagedPolicyArns:
+        - !Ref S3KMSPolicy
+
+  Role2:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Project}-${ResourceName}-2'
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Principal:
+              AWS: !Sub '${AWS::AccountId}'
+            Effect: Allow
+        Version: '2012-10-17'
+      Path: "/"
+      ManagedPolicyArns:
+        - !Ref S3KMSPolicy
+
+
+###############################################################################
+### Output
+###############################################################################
+Outputs:
+  User1:
+    Value: !Ref User1
+  User1Arn:
+    Value: !GetAtt User1.Arn
+  User1AccessKey:
+    Value: !Ref User1ProgrammaticAccess
+  User1SecretKey:
+    Value: !GetAtt User1ProgrammaticAccess.SecretAccessKey
+  User2:
+    Value: !Ref User2
+  User2Arn:
+    Value: !GetAtt User2.Arn
+  User2AccessKey:
+    Value: !Ref User2ProgrammaticAccess
+  User2SecretKey:
+    Value: !GetAtt User2ProgrammaticAccess.SecretAccessKey
+  Role1Arn:
+    Value: !GetAtt Role1.Arn
+  Role2Arn:
+    Value: !GetAtt Role2.Arn
+  AllowedPrincipals:
+    Value: !Join
+      - ","
+      - - !GetAtt User2.Arn
+        - !GetAtt Role2.Arn

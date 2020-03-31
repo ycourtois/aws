@@ -1,0 +1,57 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAWDOXHKLEDJHFXXXXX",
+        "arn": "arn:aws:iam::1234567890:user/alice",
+        "accountId": "1234567890",
+        "accessKeyId": "AKIAXXXXXXXXXXXXXX",
+        "userName": "alice"
+      },
+      "eventTime": "2020-03-31T14:21:59Z",
+      "eventSource": "cloudformation.amazonaws.com",
+      "eventName": "DescribeStacks",
+      "awsRegion": "eu-west-1",
+      "sourceIPAddress": "255.255.255.255",
+      "userAgent": "Boto3/1.9.170 Python/3.7.3 Windows/10 Botocore/1.12.170",
+      "requestParameters": {
+        "stackName": "my-stack-name"
+      },
+      "responseElements": null,
+      "requestID": "90f49294-c7a0-4f64-8cf9-066a58b3e053",
+      "eventID": "1d146027-52a8-417d-be7e-a15108ca835b",
+      "eventType": "AwsApiCall",
+      "recipientAccountId": "1234567890"
+    },
+    {
+      "eventVersion": "1.05",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDAWDOXHKLEDJHFXXXXX",
+        "arn": "arn:aws:iam::1234567890:user/bob",
+        "accountId": "1234567890",
+        "userName": "bob"
+      },
+      "eventTime": "2020-03-31T08:56:40Z",
+      "eventSource": "signin.amazonaws.com",
+      "eventName": "ConsoleLogin",
+      "awsRegion": "eu-west-1",
+      "sourceIPAddress": "255.255.255.255",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36",
+      "requestParameters": null,
+      "responseElements": {
+        "ConsoleLogin": "Success"
+      },
+      "additionalEventData": {
+        "LoginTo": "https://s3.console.aws.amazon.com/s3/buckets/my-bucket",
+        "MobileVersion": "No",
+        "MFAUsed": "Yes"
+      },
+      "eventID": "390345f1-991e-4ba2-9f4d-56eb156f7b94",
+      "eventType": "AwsConsoleSignIn",
+      "recipientAccountId": "1234567890"
+    }
+  ]
+}
